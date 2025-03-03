@@ -179,8 +179,20 @@ export default function AudioSteganography() {
             )}
           </CardContent>
 
-          {processedAudio && (
+          {processedAudio && audioFile && (
             <CardFooter className="flex flex-col gap-4">
+              <div className="w-full pt-4 border-t">
+                <h3 className="font-medium mb-2 flex items-center gap-2">
+                  <FileAudio className="h-4 w-4" /> Unprocessed Audio
+                </h3>
+                <audio controls className="w-full mb-4">
+                  <source
+                    src={URL.createObjectURL(audioFile)}
+                    type={audioFile?.type}
+                  />
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
               <div className="w-full pt-4 border-t">
                 <h3 className="font-medium mb-2 flex items-center gap-2">
                   <FileAudio className="h-4 w-4" /> Processed Audio
@@ -225,4 +237,3 @@ export default function AudioSteganography() {
     </div>
   );
 }
-
