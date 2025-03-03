@@ -115,7 +115,7 @@ export default function AudioSteganography() {
             <CardTitle>Hide Data in Audio</CardTitle>
             <CardDescription>
               Upload an audio file and enter a secret message to hide within the
-              audio.
+              audio!
             </CardDescription>
           </CardHeader>
           <CardContent>
