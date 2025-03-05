@@ -216,7 +216,7 @@ export default function AudioSteganography() {
             )}
           </CardContent>
 
-          {processedAudio && selected === "Encode" && (
+          {processedAudio && audioFile && selected === "Encode" && (
             <CardFooter className="flex flex-col gap-4">
               <div className="w-full pt-4 border-t">
                 <h3 className="font-medium mb-2 flex items-center gap-2">
