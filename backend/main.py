@@ -1,6 +1,7 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware  # Correct import
+from fastapi.responses import JSONResponse
 import numpy as np
 import soundfile as sf
 import io
@@ -62,6 +63,40 @@ async def embed_message(file: UploadFile = File(...), message: str = "Hello"):
 
     # Return the processed audio file
     return FileResponse(output_file, media_type="audio/flac", filename=output_file)
+
+
+def spread_spectrum_decode(audio_data, seed=42):
+    np.random.seed(seed)
+    audio_length = len(audio_data)
+
+    # Generate the same pseudo-random sequence used during encoding
+    pseudo_random_sequence = np.random.choice([-1, 1], size=audio_length)
+
+    # Decode the message
+    decoded_bits = (audio_data * pseudo_random_sequence) > 0
+    decoded_bits = decoded_bits.astype(int)
+
+    # Convert binary to string
+    decoded_message = ""
+    for i in range(0, len(decoded_bits), 8):
+        byte_bits = decoded_bits[i : i + 8]
+        if len(byte_bits) == 8:
+            byte = int("".join(map(str, byte_bits)), 2)
+            decoded_message += chr(byte)
+
+    return decoded_message
+
+
+@app.post("/decode")
+async def decode_message(file: UploadFile = File(...)):
+    # Read the uploaded .flac file
+    audio_data, samplerate = sf.read(io.BytesIO(await file.read()))
+
+    # Decode the message using spread spectrum
+    decoded_message = spread_spectrum_decode(audio_data)
+
+    # Return the decoded message
+    return JSONResponse(content={"decoded_message": decoded_message})
 
 
 if __name__ == "__main__":
