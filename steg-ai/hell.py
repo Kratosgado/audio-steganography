@@ -1,0 +1,2 @@
+def hell():
+    print("hell")
