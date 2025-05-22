@@ -1,9 +1,6 @@
 import wave
-
 import struct  # For packing and unpacking the message length
-
 from utils.logger import setup_logger
-
 logger = setup_logger(__name__)
 
 
@@ -107,5 +104,5 @@ def decode(input_file_path):
         return None  # Example usage:
 
 
-encode("harvard.wav", "output.wav", "secret123")
+encode("input.wav", "output.wav", "secret123")
 print(decode("output.wav"))  # Output: Secret123
