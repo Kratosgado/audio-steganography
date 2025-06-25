@@ -192,19 +192,24 @@ def simple_lsb_extract(audio_data):
 
 def create_synthetic_audio(duration=5, sample_rate=16000, frequency=440):
     """Create synthetic audio for testing when real audio files are not available"""
-    t = torch.linspace(0, duration, sample_rate * duration)
+    import numpy as np
+    
+    # Create time array
+    num_samples = int(sample_rate * duration)
+    t = np.linspace(0, duration, num_samples)
+    
     # Create a mix of frequencies to make it more realistic
-    audio = (torch.sin(2 * np.pi * frequency * t) + 
-             0.5 * torch.sin(2 * np.pi * frequency * 2 * t) + 
-             0.25 * torch.sin(2 * np.pi * frequency * 3 * t))
+    audio = (np.sin(2 * np.pi * frequency * t) + 
+             0.5 * np.sin(2 * np.pi * frequency * 2 * t) + 
+             0.25 * np.sin(2 * np.pi * frequency * 3 * t))
     
     # Add some noise
-    audio += 0.1 * torch.randn_like(audio)
+    audio += 0.1 * np.random.randn(len(audio))
     
     # Normalize
-    audio = audio / torch.max(torch.abs(audio))
+    audio = audio / np.max(np.abs(audio))
     
-    return audio.unsqueeze(0)
+    return audio.astype(np.float32)
 
 
 def bits_to_tensor(bits, audio_length):
@@ -429,18 +434,23 @@ def simple_lsb_extract(audio_data):
         print(f"LSB extraction error: {e}")
         return ""
 
-def create_synthetic_audio(duration=5, sample_rate=16000, frequency=440):
-    """Create synthetic audio for testing when real audio files are not available"""
-    t = torch.linspace(0, duration, sample_rate * duration)
+def create_synthetic_audio_legacy(duration=5, sample_rate=16000, frequency=440):
+    """Legacy function - kept for compatibility"""
+    import numpy as np
+    
+    # Create time array
+    num_samples = int(sample_rate * duration)
+    t = np.linspace(0, duration, num_samples)
+    
     # Create a mix of frequencies to make it more realistic
-    audio = (torch.sin(2 * np.pi * frequency * t) + 
-             0.5 * torch.sin(2 * np.pi * frequency * 2 * t) + 
-             0.25 * torch.sin(2 * np.pi * frequency * 3 * t))
+    audio = (np.sin(2 * np.pi * frequency * t) + 
+             0.5 * np.sin(2 * np.pi * frequency * 2 * t) + 
+             0.25 * np.sin(2 * np.pi * frequency * 3 * t))
     
     # Add some noise
-    audio += 0.1 * torch.randn_like(audio)
+    audio += 0.1 * np.random.randn(len(audio))
     
     # Normalize
-    audio = audio / torch.max(torch.abs(audio))
+    audio = audio / np.max(np.abs(audio))
     
-    return audio.unsqueeze(0)
+    return audio.astype(np.float32)
