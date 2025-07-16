@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { ChangeEvent, FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,22 +30,22 @@ import { Progress } from "@/components/ui/progress";
 
 export default function AudioSteganography() {
   const [selected, setSelected] = useState("Encode");
-  const [audioFile, setAudioFile] = useState(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
-  const [processedAudio, setProcessedAudio] = useState(null);
-  const [decodedMessage, setDecodedMessage] = useState(null);
+  const [processedAudio, setProcessedAudio] = useState<string | null>(null);
+  const [decodedMessage, setDecodedMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [error, setError] = useState(null);
-  const [analysisResults, setAnalysisResults] = useState(null);
-  const [originalMessage, setOriginalMessage] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [analysisResults, setAnalysisResults] = useState<any>();
+  const [originalMessage] = useState("");
   const [encodingMethod, setEncodingMethod] = useState("");
-  const [encodedAudioBlob, setEncodedAudioBlob] = useState(null);
+  const [encodedAudioBlob, setEncodedAudioBlob] = useState<Blob | null>(null);
   const [encodedFileName, setEncodedFileName] = useState("");
 
   const API_URL = "http://127.0.0.1:8000";
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!audioFile) {
@@ -92,7 +92,7 @@ export default function AudioSteganography() {
         setEncodedFileName(
           `stego-${method?.toLowerCase() || "encoded"}-${
             audioFile?.name || "audio.flac"
-          }`
+          }`,
         );
         setProgress(100);
       } else if (selected === "Decode") {
@@ -132,14 +132,14 @@ export default function AudioSteganography() {
         setAnalysisResults(data.analysis_results);
         setProgress(100);
       }
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message || "An error occurred while processing your file");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.type.startsWith("audio/")) {
@@ -157,7 +157,7 @@ export default function AudioSteganography() {
     setMessage("");
     setProcessedAudio(null);
     setDecodedMessage(null);
-    setAnalysisResults(null);
+    setAnalysisResults(undefined);
     setProgress(0);
     setError(null);
     setEncodingMethod("");
@@ -222,9 +222,10 @@ export default function AudioSteganography() {
                     confidenceColor === "green"
                       ? "text-green-600"
                       : confidenceColor === "yellow"
-                      ? "text-yellow-600"
-                      : "text-red-600"
-                  }`}>
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                  }`}
+                >
                   {likelihood}% ({analysisResults.detection_confidence})
                 </span>
               </div>
@@ -234,18 +235,19 @@ export default function AudioSteganography() {
                     confidenceColor === "green"
                       ? "bg-green-500"
                       : confidenceColor === "yellow"
-                      ? "bg-yellow-500"
-                      : "bg-red-500"
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
                   }`}
-                  style={{ width: `${likelihood}%` }}></div>
+                  style={{ width: `${likelihood}%` }}
+                ></div>
               </div>
               <p className="text-xs text-gray-600 mt-1">
                 {analysisResults.detection_confidence === "Very Low" ||
                 analysisResults.detection_confidence === "Low"
                   ? "No strong indicators of hidden data detected"
                   : analysisResults.detection_confidence === "Medium"
-                  ? "Some anomalies detected - possible steganography"
-                  : "Strong indicators of hidden data present"}
+                    ? "Some anomalies detected - possible steganography"
+                    : "Strong indicators of hidden data present"}
               </p>
               {analysisResults.analysis_version && (
                 <p className="text-xs text-blue-600 mt-1">
@@ -277,7 +279,7 @@ export default function AudioSteganography() {
                     <p className="text-blue-600">
                       Chi-Square:{" "}
                       {analysisResults.enhanced_detection.lsb_analysis.chi_square?.toFixed(
-                        2
+                        2,
                       )}
                     </p>
                   </div>
@@ -321,7 +323,7 @@ export default function AudioSteganography() {
                     <p className="text-green-600">
                       Skewness:{" "}
                       {analysisResults.enhanced_detection.statistical_analysis.skewness?.toFixed(
-                        3
+                        3,
                       )}
                     </p>
                   </div>
@@ -342,7 +344,7 @@ export default function AudioSteganography() {
                     <p className="text-orange-600">
                       Global Entropy:{" "}
                       {analysisResults.enhanced_detection.entropy_analysis.global_entropy?.toFixed(
-                        2
+                        2,
                       )}
                     </p>
                   </div>
@@ -376,7 +378,7 @@ export default function AudioSteganography() {
                     <p className="text-indigo-600">Feature Variance:</p>
                     <p className="font-medium text-indigo-800">
                       {analysisResults.rl_assessment.feature_variance?.toFixed(
-                        4
+                        4,
                       )}
                     </p>
                   </div>
@@ -476,7 +478,8 @@ export default function AudioSteganography() {
                   <div className="h-24 bg-gray-100 rounded relative overflow-hidden">
                     <div
                       className={`absolute bottom-0 w-full ${band.color} transition-all duration-700`}
-                      style={{ height: `${band.value * 100}%` }}></div>
+                      style={{ height: `${band.value * 100}%` }}
+                    ></div>
                   </div>
                   <p className="text-xs mt-2 font-medium">
                     {(band.value * 100).toFixed(1)}%
@@ -507,7 +510,8 @@ export default function AudioSteganography() {
                     className="h-2 bg-indigo-500 rounded-full transition-all duration-500"
                     style={{
                       width: `${analysisResults.spectral_flatness * 100}%`,
-                    }}></div>
+                    }}
+                  ></div>
                 </div>
                 <p className="text-xs text-gray-500">
                   {analysisResults.spectral_flatness < 0.3
@@ -564,7 +568,7 @@ export default function AudioSteganography() {
                   <p className="text-xs text-gray-600 mt-1">
                     CV:{" "}
                     {analysisResults.frequency_anomalies.high_freq_cv?.toFixed(
-                      3
+                      3,
                     )}
                     {analysisResults.frequency_anomalies.high_freq_cv > 0.5
                       ? " (High - Potential LSB)"
@@ -640,7 +644,7 @@ export default function AudioSteganography() {
                           encodedFileName,
                           {
                             type: encodedAudioBlob.type || "audio/flac",
-                          }
+                          },
                         );
                         setAudioFile(file);
                         setError(null);
@@ -658,15 +662,15 @@ export default function AudioSteganography() {
               {selected === "Encode"
                 ? "AI-Powered Message Encoding"
                 : selected === "Decode"
-                ? "Neural Message Decoder"
-                : "Advanced Steganalysis"}
+                  ? "Neural Message Decoder"
+                  : "Advanced Steganalysis"}
             </CardTitle>
             <CardDescription>
               {selected === "Encode"
                 ? "Our RL agent automatically selects the optimal encoding method for your audio file!"
                 : selected === "Decode"
-                ? "Extract hidden messages using our trained neural network decoder."
-                : "Comprehensive analysis using machine learning to detect potential steganography."}
+                  ? "Extract hidden messages using our trained neural network decoder."
+                  : "Comprehensive analysis using machine learning to detect potential steganography."}
             </CardDescription>
           </CardHeader>
 
@@ -722,7 +726,8 @@ export default function AudioSteganography() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || !audioFile}>
+                disabled={isLoading || !audioFile}
+              >
                 {isLoading ? (
                   <>
                     Processing...{" "}
@@ -733,8 +738,8 @@ export default function AudioSteganography() {
                     {selected === "Encode"
                       ? "Smart Encode"
                       : selected === "Decode"
-                      ? "🔓 AI Decode"
-                      : "🔬 Deep Analyze"}{" "}
+                        ? "🔓 AI Decode"
+                        : "🔬 Deep Analyze"}{" "}
                     {selected === "Analyze" ? (
                       <BarChart2 className="ml-2 h-4 w-4" />
                     ) : (
@@ -752,8 +757,8 @@ export default function AudioSteganography() {
                   {progress < 40
                     ? "Initializing..."
                     : progress < 80
-                    ? "Processing with AI..."
-                    : "Finalizing results..."}
+                      ? "Processing with AI..."
+                      : "Finalizing results..."}
                 </p>
               </div>
             )}
@@ -800,7 +805,8 @@ export default function AudioSteganography() {
                   <Button
                     variant="secondary"
                     className="flex-1"
-                    onClick={resetForm}>
+                    onClick={resetForm}
+                  >
                     Encode Another
                   </Button>
                   <Button
@@ -815,7 +821,8 @@ export default function AudioSteganography() {
                       document.body.appendChild(a);
                       a.click();
                       document.body.removeChild(a);
-                    }}>
+                    }}
+                  >
                     Download <Download className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -864,7 +871,8 @@ export default function AudioSteganography() {
                   <Button
                     variant="secondary"
                     className="flex-1"
-                    onClick={resetForm}>
+                    onClick={resetForm}
+                  >
                     Decode Another
                   </Button>
                   <Button
@@ -872,7 +880,8 @@ export default function AudioSteganography() {
                     className="flex-1"
                     onClick={() => {
                       navigator.clipboard.writeText(decodedMessage);
-                    }}>
+                    }}
+                  >
                     Copy Message
                   </Button>
                 </div>
