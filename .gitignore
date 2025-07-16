@@ -1,3 +1,4 @@
 backend/uploads
 output.flac
 **/*.odt
+**/*.direnv
