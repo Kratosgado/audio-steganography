@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,7 +43,7 @@ export default function AudioSteganography() {
   const [encodedAudioBlob, setEncodedAudioBlob] = useState(null);
   const [encodedFileName, setEncodedFileName] = useState("");
 
-  const API_URL = "http://127.0.0.1:8001";
+  const API_URL = "http://127.0.0.1:8000";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -89,7 +89,11 @@ export default function AudioSteganography() {
         const audioUrl = URL.createObjectURL(blob);
         setProcessedAudio(audioUrl);
         setEncodedAudioBlob(blob);
-        setEncodedFileName(`stego-${method?.toLowerCase() || "encoded"}-${audioFile?.name || "audio.flac"}`);
+        setEncodedFileName(
+          `stego-${method?.toLowerCase() || "encoded"}-${
+            audioFile?.name || "audio.flac"
+          }`
+        );
         setProgress(100);
       } else if (selected === "Decode") {
         setProgress(40);
@@ -112,7 +116,7 @@ export default function AudioSteganography() {
         if (originalMessage.trim()) {
           formData.append("original_message", originalMessage.trim());
         }
-        
+
         setProgress(40);
         response = await fetch(`${API_URL}/analyze`, {
           method: "POST",
@@ -236,7 +240,8 @@ export default function AudioSteganography() {
                   style={{ width: `${likelihood}%` }}></div>
               </div>
               <p className="text-xs text-gray-600 mt-1">
-                {analysisResults.detection_confidence === "Very Low" || analysisResults.detection_confidence === "Low"
+                {analysisResults.detection_confidence === "Very Low" ||
+                analysisResults.detection_confidence === "Low"
                   ? "No strong indicators of hidden data detected"
                   : analysisResults.detection_confidence === "Medium"
                   ? "Some anomalies detected - possible steganography"
@@ -262,43 +267,83 @@ export default function AudioSteganography() {
                   <div className="bg-blue-50 p-3 rounded">
                     <p className="font-medium text-blue-800">LSB Analysis</p>
                     <p className="text-blue-600">
-                      Anomaly Score: {(analysisResults.enhanced_detection.lsb_analysis.lsb_anomaly_score * 100).toFixed(1)}%
+                      Anomaly Score:{" "}
+                      {(
+                        analysisResults.enhanced_detection.lsb_analysis
+                          .lsb_anomaly_score * 100
+                      ).toFixed(1)}
+                      %
                     </p>
                     <p className="text-blue-600">
-                      Chi-Square: {analysisResults.enhanced_detection.lsb_analysis.chi_square?.toFixed(2)}
+                      Chi-Square:{" "}
+                      {analysisResults.enhanced_detection.lsb_analysis.chi_square?.toFixed(
+                        2
+                      )}
                     </p>
                   </div>
                 )}
                 {analysisResults.enhanced_detection.frequency_analysis && (
                   <div className="bg-purple-50 p-3 rounded">
-                    <p className="font-medium text-purple-800">Frequency Analysis</p>
-                    <p className="text-purple-600">
-                      Anomaly Score: {(analysisResults.enhanced_detection.frequency_analysis.freq_anomaly_score * 100).toFixed(1)}%
+                    <p className="font-medium text-purple-800">
+                      Frequency Analysis
                     </p>
                     <p className="text-purple-600">
-                      High Freq Ratio: {(analysisResults.enhanced_detection.frequency_analysis.high_freq_ratio * 100).toFixed(1)}%
+                      Anomaly Score:{" "}
+                      {(
+                        analysisResults.enhanced_detection.frequency_analysis
+                          .freq_anomaly_score * 100
+                      ).toFixed(1)}
+                      %
+                    </p>
+                    <p className="text-purple-600">
+                      High Freq Ratio:{" "}
+                      {(
+                        analysisResults.enhanced_detection.frequency_analysis
+                          .high_freq_ratio * 100
+                      ).toFixed(1)}
+                      %
                     </p>
                   </div>
                 )}
                 {analysisResults.enhanced_detection.statistical_analysis && (
                   <div className="bg-green-50 p-3 rounded">
-                    <p className="font-medium text-green-800">Statistical Analysis</p>
-                    <p className="text-green-600">
-                      Anomaly Score: {(analysisResults.enhanced_detection.statistical_analysis.stat_anomaly_score * 100).toFixed(1)}%
+                    <p className="font-medium text-green-800">
+                      Statistical Analysis
                     </p>
                     <p className="text-green-600">
-                      Skewness: {analysisResults.enhanced_detection.statistical_analysis.skewness?.toFixed(3)}
+                      Anomaly Score:{" "}
+                      {(
+                        analysisResults.enhanced_detection.statistical_analysis
+                          .stat_anomaly_score * 100
+                      ).toFixed(1)}
+                      %
+                    </p>
+                    <p className="text-green-600">
+                      Skewness:{" "}
+                      {analysisResults.enhanced_detection.statistical_analysis.skewness?.toFixed(
+                        3
+                      )}
                     </p>
                   </div>
                 )}
                 {analysisResults.enhanced_detection.entropy_analysis && (
                   <div className="bg-orange-50 p-3 rounded">
-                    <p className="font-medium text-orange-800">Entropy Analysis</p>
-                    <p className="text-orange-600">
-                      Anomaly Score: {(analysisResults.enhanced_detection.entropy_analysis.entropy_anomaly_score * 100).toFixed(1)}%
+                    <p className="font-medium text-orange-800">
+                      Entropy Analysis
                     </p>
                     <p className="text-orange-600">
-                      Global Entropy: {analysisResults.enhanced_detection.entropy_analysis.global_entropy?.toFixed(2)}
+                      Anomaly Score:{" "}
+                      {(
+                        analysisResults.enhanced_detection.entropy_analysis
+                          .entropy_anomaly_score * 100
+                      ).toFixed(1)}
+                      %
+                    </p>
+                    <p className="text-orange-600">
+                      Global Entropy:{" "}
+                      {analysisResults.enhanced_detection.entropy_analysis.global_entropy?.toFixed(
+                        2
+                      )}
                     </p>
                   </div>
                 )}
@@ -317,19 +362,32 @@ export default function AudioSteganography() {
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <p className="text-indigo-600">Recommended Method:</p>
-                    <p className="font-medium text-indigo-800">{analysisResults.rl_assessment.recommended_method}</p>
+                    <p className="font-medium text-indigo-800">
+                      {analysisResults.rl_assessment.recommended_method}
+                    </p>
                   </div>
                   <div>
                     <p className="text-indigo-600">RL Confidence:</p>
-                    <p className="font-medium text-indigo-800">{analysisResults.rl_assessment.confidence}</p>
+                    <p className="font-medium text-indigo-800">
+                      {analysisResults.rl_assessment.confidence}
+                    </p>
                   </div>
                   <div>
                     <p className="text-indigo-600">Feature Variance:</p>
-                    <p className="font-medium text-indigo-800">{analysisResults.rl_assessment.feature_variance?.toFixed(4)}</p>
+                    <p className="font-medium text-indigo-800">
+                      {analysisResults.rl_assessment.feature_variance?.toFixed(
+                        4
+                      )}
+                    </p>
                   </div>
                   <div>
                     <p className="text-indigo-600">RL Likelihood:</p>
-                    <p className="font-medium text-indigo-800">{(analysisResults.rl_assessment.rl_likelihood * 100).toFixed(1)}%</p>
+                    <p className="font-medium text-indigo-800">
+                      {(
+                        analysisResults.rl_assessment.rl_likelihood * 100
+                      ).toFixed(1)}
+                      %
+                    </p>
                   </div>
                 </div>
               </div>
@@ -347,29 +405,41 @@ export default function AudioSteganography() {
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <p className="text-gray-600">File Size:</p>
-                    <p className="font-medium">{analysisResults.metadata_analysis.file_size} bytes</p>
+                    <p className="font-medium">
+                      {analysisResults.metadata_analysis.file_size} bytes
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-600">File Type:</p>
-                    <p className="font-medium">{analysisResults.metadata_analysis.file_type}</p>
+                    <p className="font-medium">
+                      {analysisResults.metadata_analysis.file_type}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-600">Bit Depth:</p>
-                    <p className="font-medium">{analysisResults.metadata_analysis.bit_depth} bits</p>
+                    <p className="font-medium">
+                      {analysisResults.metadata_analysis.bit_depth} bits
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-600">Encoding:</p>
-                    <p className="font-medium">{analysisResults.metadata_analysis.encoding || 'Unknown'}</p>
+                    <p className="font-medium">
+                      {analysisResults.metadata_analysis.encoding || "Unknown"}
+                    </p>
                   </div>
                   {analysisResults.metadata_analysis.creation_time && (
                     <div className="col-span-2">
                       <p className="text-gray-600">Creation Time:</p>
-                      <p className="font-medium">{analysisResults.metadata_analysis.creation_time}</p>
+                      <p className="font-medium">
+                        {analysisResults.metadata_analysis.creation_time}
+                      </p>
                     </div>
                   )}
                   {analysisResults.metadata_analysis.suspicious_metadata && (
                     <div className="col-span-2">
-                      <p className="text-red-600 font-medium">⚠️ Suspicious metadata detected</p>
+                      <p className="text-red-600 font-medium">
+                        ⚠️ Suspicious metadata detected
+                      </p>
                     </div>
                   )}
                 </div>
@@ -560,10 +630,18 @@ export default function AudioSteganography() {
                     onChange={() => {
                       setSelected(option);
                       // Auto-populate decode tab with encoded audio if available
-                      if (option === "Decode" && encodedAudioBlob && encodedFileName) {
-                        const file = new File([encodedAudioBlob], encodedFileName, {
-                          type: encodedAudioBlob.type || "audio/flac"
-                        });
+                      if (
+                        option === "Decode" &&
+                        encodedAudioBlob &&
+                        encodedFileName
+                      ) {
+                        const file = new File(
+                          [encodedAudioBlob],
+                          encodedFileName,
+                          {
+                            type: encodedAudioBlob.type || "audio/flac",
+                          }
+                        );
                         setAudioFile(file);
                         setError(null);
                       }
@@ -612,11 +690,13 @@ export default function AudioSteganography() {
                       Selected: {audioFile.name} (
                       {(audioFile.size / 1024).toFixed(2)} KB)
                     </p>
-                    {selected === "Decode" && encodedAudioBlob && audioFile.name === encodedFileName && (
-                      <p className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                        🎯 Auto-loaded from previous encoding
-                      </p>
-                    )}
+                    {selected === "Decode" &&
+                      encodedAudioBlob &&
+                      audioFile.name === encodedFileName && (
+                        <p className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                          🎯 Auto-loaded from previous encoding
+                        </p>
+                      )}
                   </div>
                 )}
               </div>
@@ -758,7 +838,7 @@ export default function AudioSteganography() {
                   </div>
                 </div>
               )}
-              
+
               <div className="w-full pt-4 border-t">
                 <h3 className="font-medium mb-2 flex items-center gap-2">
                   🔓 Decoded Secret Message
@@ -771,7 +851,9 @@ export default function AudioSteganography() {
                 <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                   <div>
                     <p className="text-gray-600">Message Length</p>
-                    <p className="font-medium">{decodedMessage.length} characters</p>
+                    <p className="font-medium">
+                      {decodedMessage.length} characters
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-600">Decoding Success</p>
