@@ -10,15 +10,15 @@
       devShell.${system} = pkgs.mkShell {
         buildInputs = with pkgs; [
           python312
-          python312Packages.pywebview
-          # python312Packages.numpy
-          # python312Packages.ipykernel
-          # python312Packages.librosa
-          # python312Packages.scipy
-          # python312Packages.soundfile
-          # python312Packages.matplotlib
-          # python312Packages.tensorflow
-          # python312Packages.scikit-learn
+          python312Packages.numpy
+          python312Packages.librosa
+          python312Packages.scipy
+          python312Packages.stable-baselines3
+          python312Packages.shimmy
+          python312Packages.soundfile
+          python312Packages.matplotlib
+          python312Packages.torch
+          python312Packages.scikit-learn
         ];
       };
     };
