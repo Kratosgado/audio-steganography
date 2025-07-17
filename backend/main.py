@@ -20,13 +20,14 @@ except ImportError:
         "Warning: scipy not available, some statistical analysis features will be limited"
     )
     scipy = None
-from utils import simple_lsb_embed, simple_lsb_extract, save_audio
+# from utils import simple_lsb_embed, simple_lsb_extract, save_audio
 
-from rl_environment import AudioStegEnvironment
-from rl_agent import QLearningAgent, DeepQLearningAgent, RLSteganographyManager
-from encoder import AudioStegEncoder, AdvancedAudioStegEncoder
-from decoder import AudioStegDecoder
-from utils import text_to_bits, bits_to_tensor, load_audio, save_audio
+# from rl_environment import AudioStegEnvironment
+# from rl_agent import QLearningAgent, DeepQLearningAgent, RLSteganographyManager
+# from encoder import AudioStegEncoder, AdvancedAudioStegEncoder
+# from decoder import AudioStegDecoder
+
+# from utils import text_to_bits, bits_to_tensor, load_audio, save_audio
 
 app = FastAPI()
 
@@ -49,44 +50,44 @@ FALLBACK_AGENT_PATH = "models/trained_agent_final.pth"
 encoding_methods = ["neural", "lsb", "spread_spectrum", "echo_hiding", "phase_coding"]
 
 # Initialize encoders and decoder
-encoder = AudioStegEncoder()  # Legacy encoder
-advanced_encoder = AdvancedAudioStegEncoder()  # New advanced encoder
-decoder = AudioStegDecoder()
-
-# Initialize RL environment
-rl_env = AudioStegEnvironment()
-
-# Initialize RL Steganography Manager with Deep RL
-rl_manager = RLSteganographyManager(use_deep_rl=True)
-
+# encoder = AudioStegEncoder()  # Legacy encoder
+# advanced_encoder = AdvancedAudioStegEncoder()  # New advanced encoder
+# decoder = AudioStegDecoder()
+#
+# # Initialize RL environment
+# rl_env = AudioStegEnvironment()
+#
+# # Initialize RL Steganography Manager with Deep RL
+# rl_manager = RLSteganographyManager(use_deep_rl=True)
+#
 # Try to load trained RL agent
 model_path = "models/deep_rl_agent.pth"
-try:
-    if rl_manager.load_agent(model_path):
-        print("Loaded trained Deep RL agent")
-    else:
-        print("Initialized new Deep RL agent")
-except Exception as e:
-    print(f"Error loading RL agent: {e}. Using new agent.")
-
-# Fallback to tabular Q-learning if needed
-try:
-    with open("models/rl_agent.pkl", "rb") as f:
-        fallback_agent = pickle.load(f)
-    print("Loaded fallback tabular RL agent")
-except:
-    fallback_agent = QLearningAgent(actions=encoding_methods)
-    print("Initialized fallback tabular RL agent")
-# Legacy agent loading for backward compatibility
-legacy_agent_path = "models/trained_agent.pkl"
-if os.path.exists(legacy_agent_path):
-    print(f"Loading legacy trained agent from {legacy_agent_path}")
-    try:
-        fallback_agent.load(legacy_agent_path)
-    except Exception as e:
-        print(f"Error loading legacy agent: {e}")
-else:
-    print("No trained agent found, using random initialization")
+# try:
+#     if rl_manager.load_agent(model_path):
+#         print("Loaded trained Deep RL agent")
+#     else:
+#         print("Initialized new Deep RL agent")
+# except Exception as e:
+#     print(f"Error loading RL agent: {e}. Using new agent.")
+#
+# # Fallback to tabular Q-learning if needed
+# try:
+#     with open("models/rl_agent.pkl", "rb") as f:
+#         fallback_agent = pickle.load(f)
+#     print("Loaded fallback tabular RL agent")
+# except:
+#     fallback_agent = QLearningAgent(actions=encoding_methods)
+#     print("Initialized fallback tabular RL agent")
+# # Legacy agent loading for backward compatibility
+# legacy_agent_path = "models/trained_agent.pkl"
+# if os.path.exists(legacy_agent_path):
+#     print(f"Loading legacy trained agent from {legacy_agent_path}")
+#     try:
+#         fallback_agent.load(legacy_agent_path)
+#     except Exception as e:
+#         print(f"Error loading legacy agent: {e}")
+# else:
+#     print("No trained agent found, using random initialization")
 
 
 def get_optimal_encoding_method(audio_features: torch.Tensor) -> str:
@@ -833,7 +834,6 @@ async def embed_message(file: UploadFile = File(...), message: str = "Hello"):
         audio_data, samplerate = sf.read(io.BytesIO(await file.read()))
         framework.Initialize_components(audio_data, method="spread-spectrum")
         # Read and preprocess the audio file
-        
 
         # Ensure audio_data is float32 and properly shaped
         if len(audio_data.shape) == 1:
