@@ -13,6 +13,8 @@
           python312Packages.numpy
           python312Packages.librosa
           python312Packages.scipy
+          python312Packages.fastapi
+          python312Packages.uvloop
           python312Packages.stable-baselines3
           python312Packages.shimmy
           python312Packages.soundfile
