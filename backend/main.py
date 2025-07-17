@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
+from core_modules.framework import RLAudioSteganography
 
 try:
     import scipy.stats
@@ -828,8 +829,11 @@ async def embed_message(file: UploadFile = File(...), message: str = "Hello"):
     Embed a message in audio using the trained RL agent for optimal method selection.
     """
     try:
-        # Read and preprocess the audio file
+        framework = RLAudioSteganography()
         audio_data, samplerate = sf.read(io.BytesIO(await file.read()))
+        framework.Initialize_components(audio_data, method="spread-spectrum")
+        # Read and preprocess the audio file
+        
 
         # Ensure audio_data is float32 and properly shaped
         if len(audio_data.shape) == 1:
@@ -842,20 +846,21 @@ async def embed_message(file: UploadFile = File(...), message: str = "Hello"):
         print(f"Processing audio: {len(audio_data)} samples, {samplerate} Hz")
         print(f"Message to embed: '{message}'")
 
-        # Initialize RL environment with the audio
-        rl_env.original_audio = audio_data
-        rl_env.current_audio = audio_data.copy()
-        rl_env.sample_rate = samplerate
+        # # Initialize RL environment with the audio
+        # rl_env.original_audio = audio_data
+        # rl_env.current_audio = audio_data.copy()
+        # rl_env.sample_rate = samplerate
 
         # Use simple LSB embedding for now (since it works with simple extraction)
         try:
             # Get optimal encoding method using RL agent
-            audio_features = rl_env.extract_audio_features(audio_data)
-            optimal_method = rl_manager.select_encoding_method(audio_features)
-            print(f"RL Agent selected method: {optimal_method}")
+            # audio_features = rl_env.extract_audio_features(audio_data)
+            # optimal_method = rl_manager.select_encoding_method(audio_features)
+            # print(f"RL Agent selected method: {optimal_method}")
 
             # Use simple LSB embedding for compatibility
-            stego_audio = simple_lsb_embed(audio_data, message)
+            # stego_audio = simple_lsb_embed(audio_data, message)
+            stego_audio = framework.embed_message(audio_data, message)
 
         except Exception as rl_error:
             print(f"RL agent error: {rl_error}, falling back to LSB")
@@ -891,6 +896,8 @@ async def decode_message(file: UploadFile = File(...)):
     try:
         # Read and preprocess the audio file
         audio_data, samplerate = sf.read(io.BytesIO(await file.read()))
+        framework = RLAudioSteganography()
+        framework.Initialize_components(audio_data, method="spread-spectrum")
 
         # Ensure audio_data is float32 and properly shaped
         if len(audio_data.shape) == 1:
@@ -903,20 +910,21 @@ async def decode_message(file: UploadFile = File(...)):
         print(f"Decoding audio: {len(audio_data)} samples, {samplerate} Hz")
 
         # Initialize RL environment with the audio
-        rl_env.original_audio = audio_data
-        rl_env.current_audio = audio_data.copy()
-        rl_env.sample_rate = samplerate
+        # rl_env.original_audio = audio_data
+        # rl_env.current_audio = audio_data.copy()
+        # rl_env.sample_rate = samplerate
 
         # Use simple LSB extraction (which we know works with our encoding)
         decoded_message = ""
         decoding_method = "Unknown"
 
         try:
-            decoded_message = simple_lsb_extract(audio_data)
+            # decoded_message = simple_lsb_extract(audio_data)
+            decoded_message = framework.extract_message(audio_data, 4)
             print(f"Simple LSB extracted: '{decoded_message}'")
 
             if decoded_message:
-                decoding_method = "Simple LSB"
+                decoding_method = "Spread Spectrum"
             else:
                 print("Simple LSB failed, trying RL environment...")
                 # Try to decode with different message lengths
