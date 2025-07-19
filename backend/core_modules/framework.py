@@ -1,9 +1,10 @@
 import numpy as np
 from core_modules.preprocessor import AudioPreprocessor
 from core_modules.embedding_module import EmbeddingModule
-from fastapi import UploadFile
 from core_modules.sign_encoding import SignEncoding
 from core_modules.spread_spectrum import SpreadSpectrum
+from core_modules.message_processor import string_to_bits, bits_to_string
+from core_modules.audio_analyzer import AudioAnalyzer
 
 from core_modules.config import Config, cfg
 
@@ -15,6 +16,7 @@ class RLAudioSteganography:
         self.cfg = cfg
         self.embedded_mask = None  # Store the mask used during embedding
         self.original_magnitudes = None  # Store original magnitudes
+        self.audio_analyzer = AudioAnalyzer()
 
     def Initialize_components(self, audio_data, method="sign-encoding"):
         """Initialize components"""
@@ -25,24 +27,6 @@ class RLAudioSteganography:
         self.embedder: EmbeddingModule = (
             SignEncoding() if method == "sign-encoding" else SpreadSpectrum()
         )
-
-    @staticmethod
-    def string_to_bits(message):
-        """Convert a string to a sequence of bits."""
-        return np.array(
-            [int(bit) for bit in "".join(format(ord(char), "08b") for char in message)],
-            dtype=np.float32,
-        )
-
-    @staticmethod
-    def bits_to_string(bits):
-        """Convert a sequence of bits to a string."""
-        text = ""
-        for bit in range(0, len(bits), 8):
-            if bit + 8 <= len(bits):
-                byte = "".join(str(bit) for bit in bits[bit : bit + 8])
-                text += chr(int(byte, 2))
-        return text
 
     def embed_message(self, audio_data, message):
         """Embed a message into an audio file using trained policy"""
@@ -55,11 +39,25 @@ class RLAudioSteganography:
         # Steganalysis network is initialized in Initialize_components, ensure it's done before embedding
         # If embed_message is called standalone, ensure Initialize_components is called first with the correct audio_path
 
-        msg_bits = self.string_to_bits(message)
-        action = [10000, 50, 20]
+        msg_bits = string_to_bits(message)
+        
+        if self.method == "spread-spectrum":
+            # Calculate optimal action values based on audio features
+            print(f"Analyzing audio features for optimal parameters...")
+            action = self.audio_analyzer.calculate_optimal_actions(
+                audio_data, 
+                cfg.SAMPLE_RATE, 
+                message_length=len(message)
+            )
+            print(f"Calculated optimal actions: {action}")
+        else:
+            action = [0.1]
+            
         self.embedder.set_parameters(action)
+        
         # Convert message string to bits for embedding
-        message_bits = self.string_to_bits(message)
+        message_bits = string_to_bits(message)
+        
         # stego_audio = self.embedder.embed(self.original_magnitudes, self.embedded_mask, message_bits)
         stego_audio = self.embedder.embed(
             magnitudes=self.original_magnitudes,
@@ -71,7 +69,7 @@ class RLAudioSteganography:
         )
         return stego_audio
 
-    def extract_message(self, stego_data, msg_length):
+    def extract_message(self, stego_data, msg_length=None):
         """Extract a message from a stego audio file"""
         # Load the stego audio
         preprocessor_stego = AudioPreprocessor(audio_data=stego_data)
@@ -90,16 +88,8 @@ class RLAudioSteganography:
             # mask=self.mask,
             message_length=msg_length,
         )
-        return self.bits_to_string(extracted_bits)
-
-    def plot_training_history(self):
-        """Plot training metrics"""
-        # plt.figure(figsize=(12, 8))
-        # plt.subplot(2, 2, 1)
-        # plt.plot(self.training_history['rewards'], label='Reward')
-        # plt.title('Training Rewards')
-        # plt.xlabel('Episode')
-        # plt.ylabel('Average Reward')
-        # plt.legend()
-        # plt.tight_layout()
-        # plt.show()
+        return bits_to_string(extracted_bits)
+    
+    def get_audio_analysis(self, audio_data):
+        """Get comprehensive audio analysis and capacity estimates"""
+        return self.audio_analyzer.get_embedding_capacity_estimate(audio_data, cfg.SAMPLE_RATE)

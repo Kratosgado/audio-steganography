@@ -57,33 +57,36 @@ async def embed_message(file: UploadFile = File(...), message: str = "hello"):
         print(f"Processing audio: {len(audio_data)} samples, {sr} Hz")
         print(f"Message to embed: '{message}'")
 
-        # Use simple LSB embedding for now (since it works with simple extraction)
+        # Get audio analysis and capacity estimates
+        audio_analysis = framework.get_audio_analysis(audio_data)
+        print(f"Audio analysis: {audio_analysis}")
+
+        # Use spread spectrum embedding
         try:
             optimal_method = "spread-spectrum"
-
-            # Use simple LSB embedding for compatibility
-            # stego_audio = simple_lsb_embed(audio_data, message)
             stego_audio = framework.embed_message(audio_data, message)
+            print(f"Spread spectrum embedding successful")
 
-        except Exception:
-            # print(f"RL agent error: {rl_error}, falling back to LSB")
-            # optimal_method = "LSB"
-            # stego_audio = simple_lsb_embed(audio_data, message)
-            print("error")
+        except Exception as e:
+            print(f"Spread spectrum embedding error: {e}")
+            raise
 
         # Save the processed audio as WAV to preserve LSBs
-        # output_file = f"output_{optimal_method.lower()}.wav"
         output_file = f"output_file.wav"
         print(output_file)
         AudioPreprocessor.save_audio(stego_audio, sr, output_file)
 
-        # print(f"Audio encoded successfully using {optimal_method}")
+        print(f"Audio encoded successfully using {optimal_method}")
 
         return FileResponse(
             output_file,
             media_type="audio/wav",
             filename=output_file,
-            headers={"X-Encoding-Method": optimal_method},
+            headers={
+                "X-Encoding-Method": optimal_method,
+                "X-Audio-Capacity": str(audio_analysis['practical_capacity_chars']),
+                "X-Audio-Duration": str(audio_analysis['duration_seconds']),
+            },
         )
 
     except Exception as e:
@@ -115,14 +118,15 @@ async def decode_message(file: UploadFile = File(...)):
             )  # Take first channel if stereo
 
         print(f"Decoding audio: {len(audio_data)} samples, {samplerate} Hz")
-        # Use simple LSB extraction (which we know works with our encoding)
+        
+        # Use spread spectrum extraction
         decoded_message = ""
-        decoding_method = "Unknown"
+        decoding_method = "spread-spectrum"
 
         try:
-            # decoded_message = simple_lsb_extract(audio_data)
-            decoded_message = framework.extract_message(audio_data, 5)
-            print(f"Simple LSB extracted: '{decoded_message}'")
+            # The message length will be extracted from LSB during spread spectrum extraction
+            decoded_message = framework.extract_message(audio_data, msg_length=None)
+            print(f"Spread spectrum extracted: '{decoded_message}'")
 
         except Exception as decode_error:
             print(f"Decode error: {decode_error}")
@@ -256,6 +260,24 @@ async def analyze_audio(
     #
     #     traceback.print_exc()
     #     raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+    # Placeholder response for now
+    return JSONResponse(
+        content={
+            "analysis_results": {
+                "steg_likelihood": 0.5,
+                "detection_confidence": "Medium",
+                "analysis_summary": {
+                    "duration": 10.0,
+                    "sample_rate": 22050,
+                    "total_samples": 220500,
+                    "channels": 1
+                }
+            },
+            "status": "success",
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
 
 
 # ========== Entry Point ==========

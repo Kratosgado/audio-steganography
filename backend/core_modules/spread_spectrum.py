@@ -84,150 +84,140 @@ class SpreadSpectrum(EmbeddingModule):
 
         return gold_seq
 
-    def _decimal_to_binary(self, decimal_value, num_bits):
+    def _int_to_bits(self, decimal_value, num_bits):
         """Convert a decimal value to a binary string of a fixed number of bits."""
-        return bin(decimal_value)[2:].zfill(num_bits)
+        binary_string = bin(decimal_value)[2:].zfill(num_bits)
+        return [int(bit) for bit in binary_string]
 
-    def _binary_to_decimal(self, binary_string):
+    def _bits_to_int(self, binary_string):
         """Convert a binary string to a decimal value."""
         return int(binary_string, 2)
 
-    def _embed_bits_lsb(self, audio, bits_to_embed):
+    def _embed_bits_lsb(self, audio, bits_to_embed, start_sample=0):
         """Embed a sequence of bits into the least significant bits of audio samples."""
         audio_int = (audio * NORM_NUM).astype(np.int16)
-        audio_bits = np.unpackbits(audio_int.view(np.uint8))
-
-        if len(bits_to_embed) > len(audio_bits):
+        
+        if len(bits_to_embed) > len(audio_int):
             raise ValueError("Not enough audio samples to embed all bits.")
 
-        # Replace LSBs of audio_bits with bits_to_embed
-        # This is a simplified approach, typically you'd embed into specific bytes/bits
-        # based on the audio format and desired imperceptibility.
-        # Here, we'll replace the last bit of each 16-bit audio sample (2 bytes)
-        num_audio_bytes = len(audio_int) * 2
-        num_bits_per_sample = 16
-        lsb_indices = np.arange(num_audio_bytes) * num_bits_per_sample + (
-            num_bits_per_sample - 1
-        )
-
-        # Ensure we don't exceed the available LSBs
-        if len(bits_to_embed) > len(lsb_indices):
-            raise ValueError("Not enough LSBs in audio to embed all bits.")
-
         # Create a copy to modify
-        audio_bits_modified = audio_bits.copy()
+        audio_int_modified = audio_int.copy()
 
-        # Embed the bits
+        # Embed the bits starting from start_sample
         for i, bit in enumerate(bits_to_embed):
-            audio_bits_modified[lsb_indices[i]] = bit
+            if start_sample + i < len(audio_int_modified):
+                # Replace the LSB of each 16-bit sample
+                sample_index = start_sample + i
+                # Clear the LSB and set it to the new bit
+                audio_int_modified[sample_index] = (audio_int_modified[sample_index] & 0xFE) | bit
 
-        # Pack the modified bits back into int16
-        audio_int_modified = np.packbits(audio_bits_modified).view(np.int16)
         return audio_int_modified.astype(np.float32) / NORM_NUM
 
-    def _extract_bits_lsb(self, audio, num_bits_to_extract):
+    def _extract_bits_lsb(self, audio, num_bits_to_extract, start_sample=0):
         """Extract a sequence of bits from the least significant bits of audio samples."""
         audio_int = (audio * NORM_NUM).astype(np.int16)
-        audio_bits = np.unpackbits(audio_int.view(np.uint8))
 
-        num_audio_bytes = len(audio_int) * 2
-        num_bits_per_sample = 16
-        lsb_indices = np.arange(num_audio_bytes) * num_bits_per_sample + (
-            num_bits_per_sample - 1
-        )
-
-        if num_bits_to_extract > len(lsb_indices):
+        if num_bits_to_extract + start_sample > len(audio_int):
             raise ValueError("Cannot extract more bits than available LSBs.")
 
-        extracted_bits = [
-            audio_bits[lsb_indices[i]] for i in range(num_bits_to_extract)
-        ]
+        extracted_bits = []
+        for i in range(num_bits_to_extract):
+            sample_index = start_sample + i
+            # Extract the LSB
+            bit = audio_int[sample_index] & 1
+            extracted_bits.append(bit)
+            
         return extracted_bits
 
     def embed(self, original_audio, msg_bits: np.ndarray, action, **kwargs):
         """
-        Embed a message into an audio file.
+        Embed a message into an audio file using spread spectrum with LSB hiding of parameters.
 
         Parameters:
-          original_audio (str): Path to the audio file.
-          message (str): The message to be embedded.
-          output_path (str): Path to save the embedded audio file.
+          original_audio (ndarray): Original audio data
+          msg_bits (ndarray): Message bits to embed
           action (tuple): Parameters for embedding (carrier_freq, chip_rate, snr_db)
         """
+        # Set parameters from action
         carrier_freq, chip_rate, snr_db = self.set_parameters(action)
-        # Convert parameters to binary strings
-        # Assuming a fixed number of bits for each parameter for simplicity
-        carrier_freq_bits = self._decimal_to_binary(
-            carrier_freq, 16
-        )  # Example: 16 bits for carrier freq
-        chip_rate_bits = self._decimal_to_binary(
-            chip_rate, 8
-        )  # Example: 8 bits for chip rate
-        snr_db_bits = self._decimal_to_binary(
-            int(snr_db), 8
-        )  # Example: 8 bits for SNR dB
-
-        # Concatenate parameter bits
-        param_bits = [
-            int(bit) for bit in carrier_freq_bits + chip_rate_bits + snr_db_bits
-        ]
-
-        # Embed parameter bits using LSB
-        stego_audio = self._embed_bits_lsb(original_audio.copy(), param_bits)
-
-        msg_bits = msg_bits * 2 - 1  # convert to bipoloar (-1, 1)
-
-        # generate spreading codes
-        code_length = len(msg_bits) * chip_rate
+        
+        # Calculate message length in bits
+        message_length = len(msg_bits)
+        
+        # Convert parameters to binary strings for LSB embedding
+        carrier_freq_bits = self._int_to_bits(carrier_freq, 16)
+        chip_rate_bits = self._int_to_bits(chip_rate, 8)
+        snr_db_bits = self._int_to_bits(snr_db, 8)
+        message_length_bits = self._int_to_bits(message_length, 16)
+        
+        # Concatenate all parameter bits
+        param_bits = carrier_freq_bits + chip_rate_bits + snr_db_bits + message_length_bits
+        total_param_bits = len(param_bits)
+        
+        print(f"Embedding parameters: carrier_freq={carrier_freq}, chip_rate={chip_rate}, snr_db={snr_db}, message_length={message_length}")
+        print(f"Total parameter bits: {total_param_bits}")
+                
+        # Convert message bits to bipolar (-1, 1)
+        msg_bits_bipolar = msg_bits * 2 - 1
+        
+        # Generate spreading codes
+        code_length = len(msg_bits_bipolar) * chip_rate
         spreading_code = self._generate_spreading_code(code_length)
-
-        # create the spread message signal
-        spread_message = np.repeat(msg_bits, chip_rate) * spreading_code
-
-        # create carrier signal (sine wave at carrier frequency)
+        
+        # Create the spread message signal
+        spread_message = np.repeat(msg_bits_bipolar, chip_rate) * spreading_code
+        
+        # Create carrier signal (sine wave at carrier frequency)
         t = np.arange(len(spread_message)) / cfg.SAMPLE_RATE
         carrier = np.sin(2 * np.pi * carrier_freq * t)
-
-        # modulate the message onto the carrier
+        
+        # Modulate the message onto the carrier
         modulated = spread_message * carrier
-
-        # adjust the signal power based on desired snr
+        
+        # Adjust the signal power based on desired SNR
         signal_power = np.var(original_audio)
         message_power = np.var(modulated)
         desired_message_power = signal_power / (10 ** (snr_db / 10))
         scaling_factor = np.sqrt(desired_message_power / message_power)
         modulated = modulated * scaling_factor
-
-        # pad or truncate the modulated signal to match audio length
+        
+        stego_audio = original_audio.copy()
+        # Pad or truncate the modulated signal to match audio length
         if len(modulated) < len(stego_audio):
             modulated = np.pad(
                 modulated, (0, len(stego_audio) - len(modulated)), "constant"
             )
         else:
             modulated = modulated[: len(stego_audio)]
-
-        # embed the message into the audio (add to the audio with embedded parameters)
+        
+        # Add the modulated signal to the audio (starting after parameter bits)
+        # We'll add it to the entire audio since the LSB embedding is minimal
         stego_audio = stego_audio + modulated
+        stego_audio = self._embed_bits_lsb(stego_audio, param_bits, start_sample=0)
+
+        
         return stego_audio
 
-    def extract(self, stego_audio, message_length, original_audio_path=None, **kwargs):
+    def extract(self, stego_audio, message_length=None, original_audio_path=None, **kwargs):
         """
         Extract a hidden message from a stego audio file.
 
         Parameters:
-            stego_audio (nd.ndarray): Path to the stego audio file
-            message_length (int): Length of the hidden message in bits
+            stego_audio (ndarray): Stego audio data
+            message_length (int): Optional length of the hidden message in bits
             original_audio_path (str): Optional path to original audio for comparison
         """
         # First, extract the parameter bits using LSB
-        # Assuming the same number of bits used for embedding each parameter
         num_carrier_freq_bits = 16
         num_chip_rate_bits = 8
         num_snr_db_bits = 8
-        total_param_bits = num_carrier_freq_bits + num_chip_rate_bits + num_snr_db_bits
-
-        extracted_param_bits = self._extract_bits_lsb(stego_audio, total_param_bits)
-
+        num_message_length_bits = 16
+        total_param_bits = num_carrier_freq_bits + num_chip_rate_bits + num_snr_db_bits + num_message_length_bits
+        
+        print(f"Extracting {total_param_bits} parameter bits from LSB...")
+        
+        extracted_param_bits = self._extract_bits_lsb(stego_audio, total_param_bits, start_sample=0)
+        
         # Convert extracted parameter bits back to decimal values
         carrier_freq_bits_str = "".join(
             str(bit) for bit in extracted_param_bits[:num_carrier_freq_bits]
@@ -241,57 +231,69 @@ class SpreadSpectrum(EmbeddingModule):
         snr_db_bits_str = "".join(
             str(bit)
             for bit in extracted_param_bits[
-                num_carrier_freq_bits + num_chip_rate_bits :
+                num_carrier_freq_bits + num_chip_rate_bits : num_carrier_freq_bits + num_chip_rate_bits + num_snr_db_bits
             ]
         )
-
-        extracted_carrier_freq = self._binary_to_decimal(carrier_freq_bits_str)
-        extracted_chip_rate = self._binary_to_decimal(chip_rate_bits_str)
-        extracted_snr_db = self._binary_to_decimal(snr_db_bits_str)
-
-        # Now use the extracted parameters for message extraction
+        message_length_bits_str = "".join(
+            str(bit)
+            for bit in extracted_param_bits[
+                num_carrier_freq_bits + num_chip_rate_bits + num_snr_db_bits :
+            ]
+        )
+        
+        extracted_carrier_freq = self._bits_to_int(carrier_freq_bits_str)
+        extracted_chip_rate = self._bits_to_int(chip_rate_bits_str)
+        extracted_snr_db = self._bits_to_int(snr_db_bits_str)
+        extracted_message_length = self._bits_to_int(message_length_bits_str)
+        
+        print(f"Extracted parameters: carrier_freq={extracted_carrier_freq}, chip_rate={extracted_chip_rate}, snr_db={extracted_snr_db}, message_length={extracted_message_length}")
+        
+        # Use the extracted parameters for message extraction
         self.carrier_freq = int(extracted_carrier_freq)
         self.chip_rate = int(extracted_chip_rate)
         self.snr_db = int(extracted_snr_db)
-
-        # if original audio is provided, subtract it to get just the message
+        
+        # Use extracted message length if not provided
+        if message_length is None:
+            message_length = extracted_message_length
+        
+        # If original audio is provided, subtract it to get just the message
         if original_audio_path:
             y_original, _ = librosa.load(original_audio_path, sr=cfg.SAMPLE_RATE)
             y_diff = stego_audio - y_original
         else:
             y_diff = stego_audio
-
-        # generate the same spreading code used in embedding
-        code_length = message_length * 8 * self.chip_rate  # 8 bits per character
-        # spreading_code = self._generate_spreading_code(code_length, seed=42) # Old simplified code
+        
+        # Generate the same spreading code used in embedding
+        code_length = message_length * self.chip_rate
         spreading_code = self._generate_spreading_code(code_length)
-
-        # create carrier signal
+        
+        # Create carrier signal
         t = np.arange(len(spreading_code)) / cfg.SAMPLE_RATE
         carrier = np.sin(2 * np.pi * self.carrier_freq * t)
-
-        # pad or truncate the carrier to match the difference signal
+        
+        # Pad or truncate the carrier to match the difference signal
         if len(carrier) < len(y_diff):
             carrier = np.pad(carrier, (0, len(y_diff) - len(carrier)), "constant")
         else:
             carrier = carrier[: len(y_diff)]
-
-        # demodulate the signal
+        
+        # Demodulate the signal
         demodulated = y_diff * carrier
-
-        # correlate with spreading code to extract bits
-        extracted_bits: list[int] = []
-        for i in range(message_length * 8):
+        
+        # Correlate with spreading code to extract bits
+        extracted_bits = []
+        for i in range(message_length):
             start = i * self.chip_rate
             end = start + self.chip_rate
             if end > len(demodulated):
                 break
             segment = demodulated[start:end]
             code_segment = spreading_code[start:end]
-
-            # calculate correlation
+            
+            # Calculate correlation
             correlation = np.sum(segment * code_segment)
             extracted_bits.append(1 if correlation > 0 else 0)
-
-        # convert bits to string
+        
+        print(f"Extracted {len(extracted_bits)} bits from spread spectrum")
         return extracted_bits

@@ -26,6 +26,7 @@ export default function AudioSteganographyApp() {
   const [encodingMethod, setEncodingMethod] = useState("");
   const [encodedAudioBlob, setEncodedAudioBlob] = useState<Blob | null>(null);
   const [encodedFileName, setEncodedFileName] = useState("");
+  const [audioAnalysis, setAudioAnalysis] = useState<any>(null);
 
   const API_URL = "http://127.0.0.1:8000";
 
@@ -64,9 +65,16 @@ export default function AudioSteganographyApp() {
           throw new Error(`Server error: ${response.status}`);
         }
 
-        // Get encoding method from headers
+        // Get encoding method and audio analysis from headers
         const method = response.headers.get("X-Encoding-Method") || "Unknown";
+        const capacity = response.headers.get("X-Audio-Capacity");
+        const duration = response.headers.get("X-Audio-Duration");
+        
         setEncodingMethod(method);
+        setAudioAnalysis({
+          capacity,
+          duration,
+        });
 
         setProgress(80);
         const blob = await response.blob();
@@ -141,6 +149,7 @@ export default function AudioSteganographyApp() {
     setEncodingMethod("");
     setEncodedAudioBlob(null);
     setEncodedFileName("");
+    setAudioAnalysis(null);
   };
 
   const handleModeChange = (mode: string) => {
@@ -260,6 +269,7 @@ export default function AudioSteganographyApp() {
               encodingMethod={encodingMethod}
               encodedFileName={encodedFileName}
               onReset={resetForm}
+              audioAnalysis={audioAnalysis}
             />
           )}
 
