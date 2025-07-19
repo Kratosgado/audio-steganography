@@ -81,11 +81,7 @@ export default function AudioSteganographyApp() {
         const audioUrl = URL.createObjectURL(blob);
         setProcessedAudio(audioUrl);
         setEncodedAudioBlob(blob);
-        setEncodedFileName(
-          `stego-${method?.toLowerCase() || "encoded"}-${
-            audioFile?.name || "audio.flac"
-          }`,
-        );
+        setEncodedFileName(`stego-${ audioFile?.name || "audio.wav"}`);
         setProgress(100);
       } else if (selected === "Decode") {
         setProgress(40);

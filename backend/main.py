@@ -8,7 +8,7 @@ import soundfile as sf
 import io
 import os
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Annotated, Dict, Any, Optional
 from datetime import datetime
 from core_modules import config
 from core_modules.framework import RLAudioSteganography
@@ -33,11 +33,12 @@ async def read_root():
 
 
 @app.post("/upload")
-async def embed_message(file: UploadFile = File(...), message: str = "hello"):
+async def embed_message(file: Annotated[UploadFile, File()], message: Annotated[str, Form()] = "hello"):
     """
     Embed a message in audio using the trained RL agent for optimal method selection.
     """
     try:
+        print(f"message: {message}")
         framework = RLAudioSteganography()
         audio_data, sr = librosa.load(
             io.BytesIO(await file.read()), sr=config.cfg.SAMPLE_RATE
