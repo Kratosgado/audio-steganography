@@ -6,10 +6,7 @@ import {
   AlertCircle,
   Shield,
   Brain,
-  FileText,
   Waves,
-  Activity,
-  Zap,
 } from "lucide-react";
 
 interface AnalysisResultsProps {
