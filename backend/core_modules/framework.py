@@ -16,11 +16,11 @@ class RLAudioSteganography:
         self.embedded_mask = None  # Store the mask used during embedding
         self.original_magnitudes = None  # Store original magnitudes
 
-    def Initialize_components(self, audio_file: UploadFile, method="sign-encoding"):
+    def Initialize_components(self, audio_data, method="sign-encoding"):
         """Initialize components"""
-        self.preprocessor = AudioPreprocessor(audio_path=audio_file)
-        self.original_magnitudes, self.phases = self.preprocessor.compute_mdct()
-        self.mask = self.preprocessor.get_non_critical_coeffs(self.original_magnitudes)
+        self.preprocessor = AudioPreprocessor(audio_data=audio_data)
+        # self.original_magnitudes, self.phases = self.preprocessor.compute_mdct()
+        # self.mask = self.preprocessor.get_non_critical_coeffs(self.original_magnitudes)
         self.method = method
         self.embedder: EmbeddingModule = (
             SignEncoding() if method == "sign-encoding" else SpreadSpectrum()
@@ -48,9 +48,9 @@ class RLAudioSteganography:
         """Embed a message into an audio file using trained policy"""
         # Re-initialize preprocessor and compute magnitudes/phases/mask for the specific audio being embedded into
         self.preprocessor = AudioPreprocessor(audio_data=audio_data)
-        self.original_magnitudes, self.phases = self.preprocessor.compute_mdct()
-        self.mask = self.preprocessor.get_non_critical_coeffs(self.original_magnitudes)
-        self.embedded_mask = self.mask  # Store the mask used for embedding
+        # self.original_magnitudes, self.phases = self.preprocessor.compute_mdct()
+        # self.mask = self.preprocessor.get_non_critical_coeffs(self.original_magnitudes)
+        # self.embedded_mask = self.mask  # Store the mask used for embedding
 
         # Steganalysis network is initialized in Initialize_components, ensure it's done before embedding
         # If embed_message is called standalone, ensure Initialize_components is called first with the correct audio_path
@@ -63,8 +63,8 @@ class RLAudioSteganography:
         # stego_audio = self.embedder.embed(self.original_magnitudes, self.embedded_mask, message_bits)
         stego_audio = self.embedder.embed(
             magnitudes=self.original_magnitudes,
-            phases=self.phases,
-            mask=self.mask,
+            # phases=self.phases,
+            # mask=self.mask,
             msg_bits=msg_bits,
             original_audio=self.preprocessor.audio.copy(),
             action=action,
@@ -75,19 +75,19 @@ class RLAudioSteganography:
         """Extract a message from a stego audio file"""
         # Load the stego audio
         preprocessor_stego = AudioPreprocessor(audio_data=stego_data)
-        magnitudes_stego, phases_stego = preprocessor_stego.compute_mdct()
+        # magnitudes_stego, phases_stego = preprocessor_stego.compute_mdct()
 
         # Use the stored mask from embedding for extraction
-        if self.embedded_mask is None:
-            raise ValueError(
-                "Embedding must be performed before extraction to get the mask."
-            )
+        # if self.embedded_mask is None:
+        #     raise ValueError(
+        #         "Embedding must be performed before extraction to get the mask."
+        #     )
 
         # extracted_message = self.embedder.extract(magnitudes_stego, self.embedded_mask, msg_length)
         extracted_bits = self.embedder.extract(
             stego_audio=preprocessor_stego.audio.copy(),
-            magnitudes=magnitudes_stego,
-            mask=self.mask,
+            # magnitudes=magnitudes_stego,
+            # mask=self.mask,
             message_length=msg_length,
         )
         return self.bits_to_string(extracted_bits)

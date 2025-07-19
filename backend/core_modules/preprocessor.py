@@ -1,7 +1,8 @@
 import librosa
 import matplotlib.pyplot as plt
 import numpy as np
-import soundfile as wf
+import soundfile as sf
+import os
 
 from core_modules.config import cfg
 
@@ -77,5 +78,10 @@ class AudioPreprocessor:
         plt.tight_layout()
         plt.show()
 
-    def save_audio(self, audio: np.ndarray, sr: int, path: str):
-        wf.write(path, sr, (audio * NORM_NUM).astype(np.int16))
+    @staticmethod
+    def save_audio(audio: np.ndarray, sr: int, path: str):
+        os.makedirs(
+            os.path.dirname(path) if os.path.dirname(path) else ".", exist_ok=True
+        )
+        sf.write(path, audio, sr)
+        # wf.write(path, sr, (audio * NORM_NUM).astype(np.int16))
