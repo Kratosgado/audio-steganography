@@ -1,0 +1,57 @@
+# Development Dockerfile for Audio Steganography Application
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    libsndfile1 \
+    ffmpeg \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Set working directory
+WORKDIR /app
+
+# Copy backend requirements and install
+COPY backend/requirements.txt ./backend/
+RUN pip install --no-cache-dir -r backend/requirements.txt
+
+# Copy backend source code
+COPY backend/ ./backend/
+
+# Copy frontend package files and install dependencies
+COPY steg-frontend/package*.json ./frontend/
+WORKDIR /app/frontend
+RUN npm install
+
+# Copy frontend source code
+COPY steg-frontend/ ./frontend/
+
+# Go back to app directory
+WORKDIR /app
+
+# Create a development startup script
+RUN echo '#!/bin/bash\n\
+echo "Starting Audio Steganography Application in Development Mode..."\n\
+echo "Starting backend API on port 8000..."\n\
+cd /app/backend && python main.py &\n\
+BACKEND_PID=$!\n\
+echo "Starting frontend development server on port 3000..."\n\
+cd /app/frontend && npm run dev &\n\
+FRONTEND_PID=$!\n\
+echo "Development servers started!"\n\
+echo "Frontend: http://localhost:3000"\n\
+echo "Backend API: http://localhost:8000"\n\
+echo "Frontend will auto-reload on changes"\n\
+wait $BACKEND_PID $FRONTEND_PID' > /app/start-dev.sh && chmod +x /app/start-dev.sh
+
+# Expose ports
+EXPOSE 3000 8000
+
+# Set the startup command
+CMD ["/app/start-dev.sh"] 

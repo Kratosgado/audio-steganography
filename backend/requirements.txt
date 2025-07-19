@@ -50,6 +50,8 @@ ptyprocess==0.7.0
 pure_eval==0.2.3
 pydantic==2.10.6
 pydantic_core==2.27.2
+soundfile==0.13.1
+librosa==0.11.0
 Pygments==2.19.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1

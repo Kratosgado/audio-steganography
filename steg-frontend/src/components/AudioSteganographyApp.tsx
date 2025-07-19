@@ -28,7 +28,10 @@ export default function AudioSteganographyApp() {
   const [encodedFileName, setEncodedFileName] = useState("");
   const [audioAnalysis, setAudioAnalysis] = useState<any>(null);
 
-  const API_URL = "http://127.0.0.1:8000";
+  // API URL that works in both development and production Docker environments
+  const API_URL = process.env.NODE_ENV === 'production' 
+    ? 'http://localhost:8000'  // In production Docker, backend is on same container
+    : 'http://127.0.0.1:8000'; // In development, backend is on host
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

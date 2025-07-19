@@ -32,6 +32,17 @@ async def read_root():
     return {"message": "Welcome to the audio steganography API!"}
 
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Docker and monitoring"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "service": "audio-steganography-api",
+        "version": "1.0.0"
+    }
+
+
 @app.post("/upload")
 async def embed_message(file: Annotated[UploadFile, File()], message: Annotated[str, Form()] = "hello"):
     """
