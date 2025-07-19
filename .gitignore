@@ -25,3 +25,10 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+**/*.wav
+**/*.mp3
+**/*.m4a
+**/*.ogg
+**/*.flac
+**/*.aac
+**/*.webm
