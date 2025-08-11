@@ -6,9 +6,9 @@ from librosa.core import audio
 import numpy as np
 import soundfile as sf
 import io
-import os
 from pathlib import Path
 from typing import Annotated, Dict, Any, Optional
+from stable_baselines3 import PPO
 from datetime import datetime
 from core_modules import config
 from core_modules.framework import RLAudioSteganography
@@ -16,6 +16,11 @@ from core_modules.framework import RLAudioSteganography
 from core_modules.preprocessor import AudioPreprocessor
 
 app = FastAPI()
+
+# Initialize RL agent
+model_path = "ppo_audio_stego_model"
+model = PPO.load(model_path)
+framework = RLAudioSteganography()
 
 # Middleware
 app.add_middleware(
@@ -39,44 +44,41 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
         "service": "audio-steganography-api",
-        "version": "1.0.0"
+        "version": "1.0.0",
     }
 
 
 @app.post("/upload")
-async def embed_message(file: Annotated[UploadFile, File()], message: Annotated[str, Form()] = "hello"):
+async def embed_message(
+    file: Annotated[UploadFile, File()], message: Annotated[str, Form()] = "hello"
+):
     """
     Embed a message in audio using the trained RL agent for optimal method selection.
     """
     try:
         print(f"message: {message}")
-        framework = RLAudioSteganography()
-        audio_data, sr = librosa.load(
-            io.BytesIO(await file.read()), sr=config.cfg.SAMPLE_RATE
-        )
+        waveform, sr = librosa.load(io.BytesIO(await file.read()))
 
-        framework.Initialize_components(audio_data, method="spread-spectrum")
+        framework.Initialize_components(method="spread-spectrum")
         # Read and preprocess the audio file
 
         # Ensure audio_data is float32 and properly shaped
-        if len(audio_data.shape) == 1:
-            audio_data = audio_data.astype(np.float32)
+        if len(waveform.shape) == 1:
+            waveform = waveform.astype(np.float32)
         else:
-            audio_data = audio_data[:, 0].astype(
-                np.float32
-            )  # Take first channel if stereo
+            waveform = waveform[:, 0].astype(np.float32)  # Take first channel if stereo
 
-        print(f"Processing audio: {len(audio_data)} samples, {sr} Hz")
+        print(f"Processing audio: {len(waveform)} samples, {sr} Hz")
         print(f"Message to embed: '{message}'")
 
         # Get audio analysis and capacity estimates
-        audio_analysis = framework.get_audio_analysis(audio_data)
+        audio_analysis = framework.get_audio_analysis(waveform)
         print(f"Audio analysis: {audio_analysis}")
 
         # Use spread spectrum embedding
         try:
             optimal_method = "spread-spectrum"
-            stego_audio = framework.embed_message(audio_data, message)
+            stego_audio = framework.embed_message(waveform, message, sr, model)
             print(f"Spread spectrum embedding successful")
 
         except Exception as e:
@@ -86,7 +88,7 @@ async def embed_message(file: Annotated[UploadFile, File()], message: Annotated[
         # Save the processed audio as WAV to preserve LSBs
         output_file = f"output_file.wav"
         print(output_file)
-        AudioPreprocessor.save_audio(stego_audio, sr, output_file)
+        AudioPreprocessor.save_audio(stego_audio, int(sr), output_file)
 
         print(f"Audio encoded successfully using {optimal_method}")
 
@@ -96,8 +98,8 @@ async def embed_message(file: Annotated[UploadFile, File()], message: Annotated[
             filename=output_file,
             headers={
                 "X-Encoding-Method": optimal_method,
-                "X-Audio-Capacity": str(audio_analysis['practical_capacity_chars']),
-                "X-Audio-Duration": str(audio_analysis['duration_seconds']),
+                "X-Audio-Capacity": str(audio_analysis["practical_capacity_chars"]),
+                "X-Audio-Duration": str(audio_analysis["duration_seconds"]),
             },
         )
 
@@ -115,29 +117,24 @@ async def decode_message(file: UploadFile = File(...)):
     Decode a message from audio using the trained RL environment.
     """
     try:
-        audio_data, samplerate = librosa.load(
-            io.BytesIO(await file.read()), sr=config.cfg.SAMPLE_RATE
-        )
-        framework = RLAudioSteganography()
-        framework.Initialize_components(audio_data, method="spread-spectrum")
+        waveform, sr = librosa.load(io.BytesIO(await file.read()))
+        framework.Initialize_components(method="spread-spectrum")
 
         # Ensure audio_data is float32 and properly shaped
-        if len(audio_data.shape) == 1:
-            audio_data = audio_data.astype(np.float32)
+        if len(waveform.shape) == 1:
+            waveform = waveform.astype(np.float32)
         else:
-            audio_data = audio_data[:, 0].astype(
-                np.float32
-            )  # Take first channel if stereo
+            waveform = waveform[:, 0].astype(np.float32)  # Take first channel if stereo
 
-        print(f"Decoding audio: {len(audio_data)} samples, {samplerate} Hz")
-        
+        print(f"Decoding audio: {len(waveform)} samples, {sr} Hz")
+
         # Use spread spectrum extraction
         decoded_message = ""
         decoding_method = "spread-spectrum"
 
         try:
             # The message length will be extracted from LSB during spread spectrum extraction
-            decoded_message = framework.extract_message(audio_data, msg_length=None)
+            decoded_message = framework.extract_message(waveform, sr, msg_length=None)
             print(f"Spread spectrum extracted: '{decoded_message}'")
 
         except Exception as decode_error:
@@ -283,8 +280,8 @@ async def analyze_audio(
                     "duration": 10.0,
                     "sample_rate": 22050,
                     "total_samples": 220500,
-                    "channels": 1
-                }
+                    "channels": 1,
+                },
             },
             "status": "success",
             "timestamp": datetime.now().isoformat(),

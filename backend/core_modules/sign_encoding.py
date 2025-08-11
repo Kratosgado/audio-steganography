@@ -49,4 +49,3 @@ class SignEncoding(EmbeddingModule):
 
         # Convert binary to string
         return msg_bits
-        # chars = [chr(int(bin_str[i:i+8], 2)) for i in range(0, len(bin_str), 8)]
