@@ -18,7 +18,7 @@ class AudioPreprocessor:
         return audio
 
     @staticmethod
-    def resample_audio(waveform, sr):
+    def resample_audio(waveform, sr: int):
         """Resample audio to cfg.SAMPLE_RATE"""
         audio = librosa.resample(waveform, orig_sr=sr, target_sr=cfg.SAMPLE_RATE)
         return audio

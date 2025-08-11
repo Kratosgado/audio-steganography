@@ -25,7 +25,7 @@ class RLAudioSteganography:
             SignEncoding() if method == "sign-encoding" else SpreadSpectrum()
         )
 
-    def embed_message(self, waveform, sr, message, model):
+    def embed_message(self, waveform, sr: int, message, model):
         """Embed a message into an audio file using trained policy"""
 
         waveform = AudioPreprocessor.resample_audio(waveform, sr)
