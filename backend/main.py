@@ -78,7 +78,7 @@ async def embed_message(
         # Use spread spectrum embedding
         try:
             optimal_method = "spread-spectrum"
-            stego_audio = framework.embed_message(waveform, message, sr, model)
+            stego_audio = framework.embed_message(waveform, sr, message, model)
             print(f"Spread spectrum embedding successful")
 
         except Exception as e:
