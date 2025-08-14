@@ -95,8 +95,8 @@ class AudioPreprocessor:
         return features
 
     @staticmethod
-    def save_audio(audio: np.ndarray, sr: int, path: str):
+    def save_audio(audio: np.ndarray, sr, path: str):
         """Save audio to file"""
         sf.write(
-            path, audio, sr
+            path, audio, sr, format="WAV", subtype="PCM_16"
         )  # wf.write(path, sr, (audio * NORM_NUM).astype(np.int16))

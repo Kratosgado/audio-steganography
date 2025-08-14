@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Docker Test Script for Audio Steganography
 echo "🧪 Testing Audio Steganography Docker Setup"
@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 
 # Function to print colored output
 print_status() {
-    if [ $1 -eq 0 ]; then
+    if [ "$1" -eq 0 ]; then
         echo -e "${GREEN}✅ $2${NC}"
     else
         echo -e "${RED}❌ $2${NC}"
@@ -86,4 +86,4 @@ echo "If all tests passed, your Docker setup is working correctly."
 echo ""
 echo "To run the application:"
 echo "  ./run-docker.sh prod    # Production mode"
-echo "  ./run-docker.sh dev     # Development mode" 
+echo "  ./run-docker.sh dev     # Development mode"

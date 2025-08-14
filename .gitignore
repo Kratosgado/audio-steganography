@@ -32,3 +32,4 @@ wheels/
 **/*.flac
 **/*.aac
 **/*.webm
+kaggle.json

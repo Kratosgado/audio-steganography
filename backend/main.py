@@ -59,45 +59,29 @@ async def embed_message(
         print(f"message: {message}")
         waveform, sr = librosa.load(io.BytesIO(await file.read()))
 
+        AudioPreprocessor.save_audio(waveform, sr, "first.wav")
+
         framework.Initialize_components(method="spread-spectrum")
         # Read and preprocess the audio file
 
-        # Ensure audio_data is float32 and properly shaped
-        if len(waveform.shape) == 1:
-            waveform = waveform.astype(np.float32)
-        else:
-            waveform = waveform[:, 0].astype(np.float32)  # Take first channel if stereo
-
-        print(f"Processing audio: {len(waveform)} samples, {sr} Hz")
-        print(f"Message to embed: '{message}'")
-
-        # Get audio analysis and capacity estimates
         audio_analysis = framework.get_audio_analysis(waveform)
         print(f"Audio analysis: {audio_analysis}")
 
         # Use spread spectrum embedding
-        try:
-            optimal_method = "spread-spectrum"
-            stego_audio = framework.embed_message(waveform, sr, message, model)
-            print(f"Spread spectrum embedding successful")
-
-        except Exception as e:
-            print(f"Spread spectrum embedding error: {e}")
-            raise
+        stego_audio = framework.embed_message(waveform, sr, message, model)
+        print("Spread spectrum embedding successful")
 
         # Save the processed audio as WAV to preserve LSBs
         output_file = f"output_file.wav"
         print(output_file)
-        AudioPreprocessor.save_audio(stego_audio, int(sr), output_file)
-
-        print(f"Audio encoded successfully using {optimal_method}")
+        AudioPreprocessor.save_audio(stego_audio, sr, output_file)
 
         return FileResponse(
             output_file,
-            media_type="audio/wav",
+            media_type=file.content_type,
             filename=output_file,
             headers={
-                "X-Encoding-Method": optimal_method,
+                "X-Encoding-Method": "spread-spectrum",
                 "X-Audio-Capacity": str(audio_analysis["practical_capacity_chars"]),
                 "X-Audio-Duration": str(audio_analysis["duration_seconds"]),
             },

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Audio Steganography Docker Runner
 echo "🎵 Audio Steganography Docker Setup"
@@ -10,8 +10,8 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-# Check if docker-compose is installed
-if ! command -v docker-compose &> /dev/null; then
+# Check if docker compose is installed
+if ! command -v docker compose &> /dev/null; then
     echo "❌ Docker Compose is not installed. Please install Docker Compose first."
     exit 1
 fi
@@ -19,11 +19,11 @@ fi
 # Function to build and run production
 build_and_run_production() {
     echo "🏗️  Building production Docker image..."
-    docker-compose build audio-steganography
-    
+    docker compose build audio-steganography
+
     echo "🚀 Starting production application..."
-    docker-compose up audio-steganography
-    
+    docker compose up audio-steganography
+
     echo "✅ Application is running!"
     echo "🌐 Frontend: http://localhost:3000"
     echo "🔧 Backend API: http://localhost:8000"
@@ -32,11 +32,11 @@ build_and_run_production() {
 # Function to build and run development
 build_and_run_development() {
     echo "🏗️  Building development Docker image..."
-    docker-compose --profile dev build audio-steganography-dev
-    
+    docker compose --profile dev build audio-steganography-dev
+
     echo "🚀 Starting development application..."
-    docker-compose --profile dev up audio-steganography-dev
-    
+    docker compose --profile dev up audio-steganography-dev
+
     echo "✅ Development application is running!"
     echo "🌐 Frontend: http://localhost:3001"
     echo "🔧 Backend API: http://localhost:8001"
@@ -45,20 +45,20 @@ build_and_run_development() {
 # Function to stop containers
 stop_containers() {
     echo "🛑 Stopping containers..."
-    docker-compose down
+    docker compose down
     echo "✅ Containers stopped!"
 }
 
 # Function to show logs
 show_logs() {
     echo "📋 Showing logs..."
-    docker-compose logs -f
+    docker compose logs -f
 }
 
 # Function to clean up
 cleanup() {
     echo "🧹 Cleaning up Docker resources..."
-    docker-compose down --rmi all --volumes --remove-orphans
+    docker compose down --rmi all --volumes --remove-orphans
     docker system prune -f
     echo "✅ Cleanup complete!"
 }
@@ -95,4 +95,4 @@ case "${1:-}" in
         echo "  $0 dev            # Run development"
         echo "  $0 stop           # Stop containers"
         ;;
-esac 
+esac
