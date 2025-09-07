@@ -171,8 +171,10 @@ class SpreadSpectrum(EmbeddingModule):
         # Adjust the signal power based on desired SNR
         signal_power = np.var(waveform)
         message_power = np.var(modulated)
+        # Add a small epsilon to avoid division by zero if message_power is 0
+        epsilon = 1e-8
         desired_message_power = signal_power / (10 ** (snr_db / 10))
-        scaling_factor = np.sqrt(desired_message_power / message_power)
+        scaling_factor = np.sqrt(desired_message_power / (message_power + epsilon))
         modulated = modulated * scaling_factor
 
         stego_waveform = waveform.copy()
@@ -247,7 +249,9 @@ class SpreadSpectrum(EmbeddingModule):
         # If original audio is provided, subtract it to get just the message
         if original_audio_path:
             y_original, _ = librosa.load(original_audio_path, sr=cfg.SAMPLE_RATE)
-            y_diff = stego_waveform - y_original
+            # Ensure lengths match before subtraction
+            min_len = min(len(stego_waveform), len(y_original))
+            y_diff = stego_waveform[:min_len] - y_original[:min_len]
         else:
             y_diff = stego_waveform
 

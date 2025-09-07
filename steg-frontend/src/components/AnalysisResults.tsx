@@ -1,20 +1,17 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { CardFooter } from "@/components/ui/card";
-import {
-  BarChart2,
-  AlertCircle,
-  Shield,
-  Brain,
-  Waves,
-} from "lucide-react";
+import { BarChart2, AlertCircle, Shield, Brain, Waves } from "lucide-react";
 
 interface AnalysisResultsProps {
   analysisResults: any;
   onReset: () => void;
 }
 
-export function AnalysisResults({ analysisResults, onReset }: AnalysisResultsProps) {
+export function AnalysisResults({
+  analysisResults,
+  onReset,
+}: AnalysisResultsProps) {
   if (!analysisResults) return null;
 
   const confidenceColor = analysisResults.confidence_color || "green";
@@ -165,7 +162,7 @@ export function AnalysisResults({ analysisResults, onReset }: AnalysisResultsPro
           <div className="mb-6">
             <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
               <Brain className="h-4 w-4" />
-              AI/RL Assessment
+              Assessment
             </h4>
             <div className="bg-indigo-50 p-3 rounded-lg">
               <div className="grid grid-cols-2 gap-2 text-xs">
@@ -234,4 +231,4 @@ export function AnalysisResults({ analysisResults, onReset }: AnalysisResultsPro
       </div>
     </CardFooter>
   );
-} 
+}

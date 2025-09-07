@@ -15,13 +15,13 @@ class AudioPreprocessor:
     def load_audio(path):
         """Load WAV audio file and resample to cfg.SAMPLE_RATE"""
         audio, _ = librosa.load(path, sr=cfg.SAMPLE_RATE)
-        return audio
+        return AudioPreprocessor.normalize_audio(audio)
 
     @staticmethod
     def resample_audio(waveform, sr: int):
         """Resample audio to cfg.SAMPLE_RATE"""
         audio = librosa.resample(waveform, orig_sr=sr, target_sr=cfg.SAMPLE_RATE)
-        return audio
+        return AudioPreprocessor.normalize_audio(audio)
 
     @staticmethod
     def normalize_audio(waveform):
