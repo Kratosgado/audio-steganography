@@ -7,6 +7,7 @@ import numpy as np
 import soundfile as sf
 import io
 import os
+
 from pathlib import Path
 from typing import Annotated, Dict, Any, Optional
 from stable_baselines3 import PPO
@@ -15,6 +16,9 @@ from core_modules import config
 from core_modules.framework import RLAudioSteganography
 
 from core_modules.preprocessor import AudioPreprocessor
+import matplotlib
+
+matplotlib.rcParams["font.cache"] = False
 
 app = FastAPI()
 
