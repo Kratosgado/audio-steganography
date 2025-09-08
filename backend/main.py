@@ -138,7 +138,10 @@ async def decode_message(file: UploadFile = File(...)):
                 "decoded_message": decoded_message,
                 "message_length": len(decoded_message),
                 "decoding_method": decoding_method,
-            }
+            },
+            headers={
+                "Access-Control-Allow-Origin": "*",
+            },
         )
 
     except Exception as e:
