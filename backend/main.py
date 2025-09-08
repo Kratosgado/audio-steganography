@@ -281,11 +281,12 @@ async def analyze_audio(
     )
 
 
-# ========== Entry Point ==========
-
-if __name__ == "__main__":
-    import uvicorn
-
-    print("Starting Audio Steganography API with RL Agent Integration...")
-    # print(f"Trained agent available: {os.path.exists(TRAINED_AGENT_PATH)}")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+#
+# # ========== Entry Point ==========
+#
+# if __name__ == "__main__":
+#     import uvicorn
+#
+#     print("Starting Audio Steganography API with RL Agent Integration...")
+#     # print(f"Trained agent available: {os.path.exists(TRAINED_AGENT_PATH)}")
+#     uvicorn.run(app, port=8000)
