@@ -1,29 +1,29 @@
 import React from "react";
 
 interface ModeSelectorProps {
-  selected: string;
-  onModeChange: (mode: string) => void;
+	selected: string;
+	onModeChange: (mode: string) => void;
 }
 
 export function ModeSelector({ selected, onModeChange }: ModeSelectorProps) {
-  return (
-    <div style={{ display: "flex", justifyContent: "center" }}>
-      <div className="radio-inputs">
-        {["Encode", "Decode", "Analyze"].map((option) => (
-          <label key={option} className="radio">
-            <input
-              type="radio"
-              name="radio"
-              value={option}
-              checked={selected === option}
-              onChange={() => onModeChange(option)}
-            />
-            <span className="name">{option}</span>
-          </label>
-        ))}
-      </div>
+	return (
+		<div style={{ display: "flex", justifyContent: "center" }}>
+			<div className="radio-inputs">
+				{["Encode", "Decode"].map((option) => (
+					<label key={option} className="radio">
+						<input
+							type="radio"
+							name="radio"
+							value={option}
+							checked={selected === option}
+							onChange={() => onModeChange(option)}
+						/>
+						<span className="name">{option}</span>
+					</label>
+				))}
+			</div>
 
-      <style jsx>{`
+			<style jsx>{`
         .radio-inputs {
           position: relative;
           display: flex;
@@ -64,6 +64,6 @@ export function ModeSelector({ selected, onModeChange }: ModeSelectorProps) {
           font-weight: 600;
         }
       `}</style>
-    </div>
-  );
-} 
+		</div>
+	);
+}

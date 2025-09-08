@@ -26,13 +26,13 @@ framework = RLAudioSteganography()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "localhost:3000",
+        "http://localhost:3000",
         "https://audio-steganography-theta.vercel.app",
         "https://audio-steganography-git-main-kratosgados-projects.vercel.app/",
     ],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["Allow"],
 )
 
 
@@ -88,6 +88,7 @@ async def embed_message(
                 "X-Encoding-Method": "spread-spectrum",
                 "X-Audio-Capacity": str(audio_analysis["practical_capacity_chars"]),
                 "X-Audio-Duration": str(audio_analysis["duration_seconds"]),
+                "Access-Control-Allow-Origin": "*",
             },
         )
 

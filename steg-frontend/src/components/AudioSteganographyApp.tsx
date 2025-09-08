@@ -192,16 +192,12 @@ export default function AudioSteganographyApp() {
 						<CardTitle>
 							{selected === "Encode"
 								? " Message Encoding"
-								: selected === "Decode"
-									? "Neural Message Decoder"
-									: "Advanced Steganalysis"}
+								: "Neural Message Decoder"}
 						</CardTitle>
 						<CardDescription>
 							{selected === "Encode"
 								? "Our RL agent automatically selects the optimal encoding method for your audio file!"
-								: selected === "Decode"
-									? "Extract hidden messages using our trained neural network decoder."
-									: "Comprehensive analysis using machine learning to detect potential steganography."}
+								: "Extract hidden messages using our trained neural network decoder."}
 						</CardDescription>
 					</CardHeader>
 
@@ -236,11 +232,7 @@ export default function AudioSteganographyApp() {
 									</>
 								) : (
 									<>
-										{selected === "Encode"
-											? "Encode"
-											: selected === "Decode"
-												? "🔓 Decode"
-												: "🔬 Deep Analyze"}{" "}
+										{selected === "Encode" ? "Encode" : "🔓 Decode"}{" "}
 										{selected === "Analyze" ? (
 											<BarChart2 className="ml-2 h-4 w-4" />
 										) : (
