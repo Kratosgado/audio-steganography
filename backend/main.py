@@ -25,7 +25,11 @@ framework = RLAudioSteganography()
 # Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["localhost:3000", "https://audio-steganography-47d0.onrender.com"],
+    allow_origins=[
+        "localhost:3000",
+        "https://audio-steganography-theta.vercel.app",
+        "https://audio-steganography-git-main-kratosgados-projects.vercel.app/",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
