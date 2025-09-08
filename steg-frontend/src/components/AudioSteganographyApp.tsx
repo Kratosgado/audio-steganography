@@ -35,7 +35,7 @@ export default function AudioSteganographyApp() {
 	const [audioAnalysis, setAudioAnalysis] = useState<any>(null);
 
 	// API URL that works in both development and production Docker environments
-	const API_URL = process.env.BACKEND_URL; // In development, backend is on host
+	const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // In development, backend is on host
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
