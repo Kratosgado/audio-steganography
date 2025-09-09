@@ -1,5 +1,5 @@
 from typing import List, Union
-from core_modules.embedding_module import EmbeddingModule
+from app.core_modules.embedding_module import EmbeddingModule
 import numpy as np
 
 

@@ -1,12 +1,11 @@
-import numpy as np
-from core_modules.preprocessor import AudioPreprocessor
-from core_modules.embedding_module import EmbeddingModule
-from core_modules.sign_encoding import SignEncoding
-from core_modules.spread_spectrum import SpreadSpectrum
-from core_modules.message_processor import string_to_bits, bits_to_string
-from core_modules.audio_analyzer import AudioAnalyzer
+from app.core_modules.preprocessor import AudioPreprocessor
+from app.core_modules.embedding_module import EmbeddingModule
+from app.core_modules.sign_encoding import SignEncoding
+from app.core_modules.spread_spectrum import SpreadSpectrum
+from app.core_modules.message_processor import string_to_bits, bits_to_string
+from app.core_modules.audio_analyzer import AudioAnalyzer
 
-from core_modules.config import Config, cfg
+from app.core_modules.config import Config, cfg
 
 
 class RLAudioSteganography:

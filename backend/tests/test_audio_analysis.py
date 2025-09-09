@@ -6,9 +6,9 @@ Test script for audio analysis and optimal action calculation
 import numpy as np
 import librosa
 import soundfile as sf
-from core_modules.audio_analyzer import AudioAnalyzer
-from core_modules.framework import RLAudioSteganography
-from core_modules.config import cfg
+from app.core_modules.audio_analyzer import AudioAnalyzer
+from app.core_modules.framework import RLAudioSteganography
+from app.core_modules.config import cfg
 
 def test_audio_analysis():
     """Test the audio analysis and optimal action calculation"""

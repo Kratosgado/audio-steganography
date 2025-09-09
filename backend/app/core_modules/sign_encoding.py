@@ -1,7 +1,7 @@
 import numpy as np
-from core_modules.embedding_module import EmbeddingModule
-from core_modules.preprocessor import AudioPreprocessor
-from core_modules.config import cfg
+from app.core_modules.embedding_module import EmbeddingModule
+from app.core_modules.preprocessor import AudioPreprocessor
+from app.core_modules.config import cfg
 
 
 class SignEncoding(EmbeddingModule):

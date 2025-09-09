@@ -2,7 +2,7 @@ import librosa
 import numpy as np
 import soundfile as sf
 import io
-from core_modules.config import cfg
+from app.core_modules.config import cfg
 
 NORM_NUM = 32768
 

@@ -6,17 +6,18 @@ import numpy as np
 import io
 import os
 
-from typing import Annotated, Dict, Any, Optional
+
+from typing import Annotated
 from stable_baselines3 import PPO
 from datetime import datetime
-from core_modules.framework import RLAudioSteganography
 
-from core_modules.preprocessor import AudioPreprocessor
+from app.core_modules.framework import RLAudioSteganography
+from app.core_modules.preprocessor import AudioPreprocessor
 
 app = FastAPI()
 
 # Initialize RL agent
-model_path = "ppo_audio_stego_model"
+model_path = "app/ppo_audio_stego_model"
 model = PPO.load(model_path)
 framework = RLAudioSteganography()
 

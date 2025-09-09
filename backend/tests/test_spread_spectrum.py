@@ -6,9 +6,9 @@ Test script for spread spectrum steganography implementation
 import numpy as np
 import librosa
 import soundfile as sf
-from core_modules.spread_spectrum import SpreadSpectrum
-from core_modules.framework import RLAudioSteganography
-from core_modules.config import cfg
+from app.core_modules.spread_spectrum import SpreadSpectrum
+from app.core_modules.framework import RLAudioSteganography
+from app.core_modules.config import cfg
 
 def test_spread_spectrum():
     """Test the spread spectrum embedding and extraction"""
