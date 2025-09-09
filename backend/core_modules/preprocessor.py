@@ -1,7 +1,7 @@
 import librosa
 import numpy as np
 import soundfile as sf
-
+import io
 from core_modules.config import cfg
 
 NORM_NUM = 32768
@@ -94,8 +94,11 @@ class AudioPreprocessor:
         return features
 
     @staticmethod
-    def save_audio(audio: np.ndarray, sr, path: str):
+    def save_audio(audio: np.ndarray, sr):
+        memory_file = io.BytesIO()
         """Save audio to file"""
-        sf.write(
-            path, audio, sr, format="WAV", subtype="PCM_16"
-        )  # wf.write(path, sr, (audio * NORM_NUM).astype(np.int16))
+        sf.write(memory_file, audio, sr, format="WAV", subtype="PCM_16")
+        memory_file.seek(0)
+
+        yield memory_file.getvalue()
+        # wf.write(path, sr, (audio * NORM_NUM).astype(np.int16))

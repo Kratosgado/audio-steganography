@@ -1,18 +1,14 @@
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 import librosa
-from librosa.core import audio
 import numpy as np
-import soundfile as sf
 import io
 import os
 
-from pathlib import Path
 from typing import Annotated, Dict, Any, Optional
 from stable_baselines3 import PPO
 from datetime import datetime
-from core_modules import config
 from core_modules.framework import RLAudioSteganography
 
 from core_modules.preprocessor import AudioPreprocessor
@@ -34,24 +30,32 @@ app.add_middleware(
     ],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["Allow"],
+    allow_headers=["*"],
 )
 
 
 @app.get("/")
 async def read_root():
-    return {"message": "Welcome to the audio steganography API!"}
+    return JSONResponse(
+        content={
+            "message": "Welcome to the audio steganography API!",
+            "status": "success",
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
 
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint for Docker and monitoring"""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "service": "audio-steganography-api",
-        "version": "1.0.0",
-    }
+    return JSONResponse(
+        content={
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "service": "audio-steganography-api",
+            "version": "1.0.0",
+        }
+    )
 
 
 @app.post("/upload")
@@ -65,7 +69,7 @@ async def embed_message(
         print(f"message: {message}")
         waveform, sr = librosa.load(io.BytesIO(await file.read()))
 
-        AudioPreprocessor.save_audio(waveform, sr, "first.wav")
+        # AudioPreprocessor.save_audio(waveform, sr, "first.wav")
 
         framework.Initialize_components(method="spread-spectrum")
         # Read and preprocess the audio file
@@ -78,15 +82,14 @@ async def embed_message(
         print("Spread spectrum embedding successful")
 
         # Save the processed audio as WAV to preserve LSBs
-        output_file = f"output_file.wav"
-        print(output_file)
-        AudioPreprocessor.save_audio(stego_audio, sr, output_file)
+        output_file = AudioPreprocessor.save_audio(stego_audio, sr)
 
-        return FileResponse(
+        return StreamingResponse(
             output_file,
             media_type=file.content_type,
-            filename=output_file,
+            # filename=output_file,
             headers={
+                "Content-Disposition": "attachment; filename=output_file.wav",
                 "X-Encoding-Method": "spread-spectrum",
                 "X-Audio-Capacity": str(audio_analysis["practical_capacity_chars"]),
                 "X-Audio-Duration": str(audio_analysis["duration_seconds"]),

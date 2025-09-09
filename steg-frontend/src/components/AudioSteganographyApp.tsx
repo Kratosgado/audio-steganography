@@ -73,7 +73,8 @@ export default function AudioSteganographyApp() {
 				}
 
 				// Get encoding method and audio analysis from headers
-				const method = response.headers.get("X-Encoding-Method") || "Unknown";
+				const method =
+					response.headers.get("X-Encoding-Method") || "Spread Spectrum";
 				const capacity = response.headers.get("X-Audio-Capacity");
 				const duration = response.headers.get("X-Audio-Duration");
 
